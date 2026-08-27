@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+title: "Running Qwen3.8-27B-NVFP4 on DGX Spark with vLLM for Local Speed and Smarts Benchmarks"
+message: "If you use this setup, benchmark wrappers, or comparison data, please cite it as below."
+type: software
+authors:
+  - family-names: "Rawat"
+    given-names: "Rajendra Singh"
+    affiliation: "cogni.chat"
+    orcid: "https://orcid.org/0009-0007-5017-1341"
+repository-code: "https://github.com/airawatraj/dgx-spark-qwen38-super-agent"
+abstract: >-
+  A lightweight technical implementation and benchmarking suite for running
+  unsloth/Qwen3.8-27B-NVFP4 on NVIDIA DGX Spark through the vLLM runtime.
+  This repository documents the minimal Docker command to launch vLLM with
+  native tool-calling and 512K context, provides reproducible benchmark wrappers
+  for speed, smarts, and arena-style throughput testing, and tracks results
+  on the Spark hardware.
+keywords:
+  - "Qwen"
+  - "Qwen3"
+  - "DGX Spark"
+  - "vLLM"
+  - "AI Agents"
+  - "NVFP4"
+  - "Performance Benchmarking"
+  - "Tool Calling"
+license: MIT
+version: 1.0.0
+date-released: "2026-08-27"
