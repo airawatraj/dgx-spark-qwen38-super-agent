@@ -14,9 +14,10 @@ I bought a DGX Spark to do real work: running serious local AI agents and traini
 ![Tool Calling](https://img.shields.io/badge/tool--calling-native-success)
 ![Mode](https://img.shields.io/badge/mode-reasoning%20%2B%20tools-black)
 
-This is my third DGX Spark local agent setup, following:
+Part of the DGX Spark local agent series:
 - [Cogni-Brain (Nemotron-120B)](https://github.com/airawatraj/dgx-spark-nemotron-super-agent) — deep reasoning, 23 TPS
 - [Cogni-Brain-2 (Qwen 3.6-35B via Atlas)](https://github.com/airawatraj/dgx-spark-qwen-super-agent) — fast & agentic, 218 TPS
+- More setups: [github.com/airawatraj](https://github.com/airawatraj)
 
 This iteration runs [RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead](https://huggingface.co/RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead) via **SGLang** with **DSpark speculative decoding** — delivering **19–21 tok/s single-stream** (scaling to **60.5 tok/s aggregate** on 4 concurrent sessions), **97/100 Tool-Eval**, and a verified **262K context window** on a single DGX Spark node. Native tool-calling via `qwen3_coder`, thinking/reasoning via `--reasoning-parser qwen3`. The vLLM fallback (`docker/start-vllm.sh`) is preserved for 512K context and multimodal workloads.
 
