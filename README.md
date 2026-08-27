@@ -8,7 +8,8 @@ I bought a DGX Spark to do real work: running serious local AI agents and traini
 ![Base Model](https://img.shields.io/badge/base%20model-Qwen3.8--27B-limegreen)
 ![Runtime](https://img.shields.io/badge/runtime-SGLang%20DSpark-orange)
 ![Hardware](https://img.shields.io/badge/hardware-NVIDIA%20DGX%20Spark-brightgreen?logo=nvidia&logoColor=white)
-![Speed](https://img.shields.io/badge/speed-~51%20tok%2Fs-success)
+![Speed](https://img.shields.io/badge/speed-19--21%20tok%2Fs%20(60.5%20conc)-success)
+![Smarts](https://img.shields.io/badge/smarts-97%2F100-brightgreen)
 ![Context](https://img.shields.io/badge/context-262K-blue)
 ![Tool Calling](https://img.shields.io/badge/tool--calling-native-success)
 ![Mode](https://img.shields.io/badge/mode-reasoning%20%2B%20tools-black)
@@ -17,7 +18,7 @@ This is my third DGX Spark local agent setup, following:
 - [Cogni-Brain (Nemotron-120B)](https://github.com/airawatraj/dgx-spark-nemotron-super-agent) — deep reasoning, 23 TPS
 - [Cogni-Brain-2 (Qwen 3.6-35B via Atlas)](https://github.com/airawatraj/dgx-spark-qwen-super-agent) — fast & agentic, 218 TPS
 
-This iteration runs [RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead](https://huggingface.co/RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead) via **SGLang** with **DSpark speculative decoding** — delivering **~51 tok/s on code and tool calls** (~3.5× the stock vLLM baseline). Native tool-calling via `qwen3_coder`, thinking/reasoning via `--reasoning-parser qwen3`, and a 262K token context window — all on a single DGX Spark node. The vLLM fallback (`docker/start-vllm.sh`) is preserved for 512K context and multimodal workloads.
+This iteration runs [RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead](https://huggingface.co/RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead) via **SGLang** with **DSpark speculative decoding** — delivering **19–21 tok/s single-stream** (scaling to **60.5 tok/s aggregate** on 4 concurrent sessions), **97/100 Tool-Eval**, and a verified **262K context window** on a single DGX Spark node. Native tool-calling via `qwen3_coder`, thinking/reasoning via `--reasoning-parser qwen3`. The vLLM fallback (`docker/start-vllm.sh`) is preserved for 512K context and multimodal workloads.
 
 > ⚠️ **Personal workstation setup. Not for enterprise use. Use at your own risk.**
 
@@ -55,7 +56,7 @@ flowchart TD
 
     C --> E["Native Tool Calling<br/>qwen3_coder parser"]
     C --> F["Native Reasoning<br/>qwen3 parser"]
-    C --> G["~51 tok/s code<br/>~23 tok/s chat"]
+    C --> G["19-21 tok/s single<br/>60.5 tok/s 4-session conc"]
 ```
 
 ---
@@ -124,12 +125,19 @@ uv run benchmark/benchmark_speed_arena.py --save-result benchmark/results_arena.
 
 ### Speed Results (SGLang DSpark)
 
-> Run `uv run benchmark/benchmark_speed.py` after first boot and add screenshot here.
+<p align="center">
+  <img src="./assets/benchmark_speed_262K_test.png" width="700" alt="Speed benchmark — 262K context tests">
+</p>
 
-### Smarts Results (Tool-Use Evaluation)
+### Smarts Results (Tool-Use Evaluation — 97/100)
 
-> Run `uv run benchmark/benchmark_smarts.py` after first boot and add screenshot here.
-> Prior vLLM smarts results (100/100) are in [EXPERIMENTS.md](EXPERIMENTS.md).
+<p align="center">
+  <img src="./assets/benchmark_smarts_262K_1.png" width="700" alt="Smarts benchmark 262K — page 1">
+</p>
+
+<p align="center">
+  <img src="./assets/benchmark_smarts_262K_2.png" width="700" alt="Smarts benchmark 262K — page 2">
+</p>
 
 ## Environment Overrides
 
@@ -177,7 +185,7 @@ See [EXPERIMENTS.md](EXPERIMENTS.md) for archived results from prior configurati
 |---|---|---|---|---|---|
 | **[Cogni-Brain-2 (airawatraj)](https://spark-arena.com/benchmark/sub1779495971526)** | Qwen 3.6-35B | Atlas NVFP4 | **218.85** | — | 131K |
 | **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716)** | Nemotron-120B | vLLM NVFP4 | **23.45** | — | 131K |
-| **Cogni-Brain (this repo)** | Qwen3.8-27B | **SGLang DSpark** | **~51.5** | **~23** | 262K |
+| **Cogni-Brain (this repo)** | Qwen3.8-27B | **SGLang DSpark** | **60.5 (conc)** | **19–21** | 262K |
 
 > vLLM baseline results (~14 tok/s, 512K context) are documented in [EXPERIMENTS.md](EXPERIMENTS.md).
 
