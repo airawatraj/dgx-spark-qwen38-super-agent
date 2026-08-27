@@ -66,6 +66,8 @@ def build_command(args):
         "--tg",
         str(args.tg),
         "--enable-prefix-caching",
+        "--extra-body",
+        "return_token_ids=false",
         "--save-result",
         args.save_result,
         "--depth",
