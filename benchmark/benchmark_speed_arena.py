@@ -86,7 +86,7 @@ def main():
     parser.add_argument("--base-url", default="http://localhost:8000/v1")
     parser.add_argument("--model", default="Cogni-Brain")
     parser.add_argument("--served-model-name", default="Cogni-Brain")
-    parser.add_argument("--tokenizer", default="RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead")
+    parser.add_argument("--tokenizer", default="unsloth/Qwen3.8-27B-NVFP4")
     parser.add_argument("--pp", type=int, default=2048)
     parser.add_argument("--tg", type=int, default=128)
     parser.add_argument(

@@ -5,6 +5,65 @@ the default. The current default stack is documented in [README.md](README.md).
 
 ---
 
+## Iteration 2 — SGLang DSpark Baseline (RadixArk NVFP4 BF16-LMHead)
+
+**Config:** `docker/start-sglang.sh`  
+**Model:** `RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead`  
+**Drafter:** `RadixArk/Qwen3.8-27B-DSpark` (block-7, k=8)  
+**Runtime:** SGLang `lmsysorg/sglang:qwen38-27b`  
+**Date:** August 2026
+
+### Configuration summary
+
+| Parameter | Value |
+|---|---|
+| Runtime | SGLang OpenAI server |
+| Main Model | `RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead` |
+| Drafter Model | `RadixArk/Qwen3.8-27B-DSpark` |
+| KV cache | fp8_e4m3 |
+| Max context | 262K (262,144 tokens) |
+| Chunked prefill | 8192 tokens |
+| Mem fraction static | 0.90 |
+| Speculative algorithm | DSpark (block-7, draft tokens 8) |
+| Tool calling | Native (`qwen3_coder`) |
+| Reasoning parser | Native (`qwen3`) |
+
+### Results
+
+| Metric | Result |
+|---|---|
+| Average TPS (single session) | 18.9–21.0 tok/s |
+| Concurrency TPS (4 streams) | **60.5 tok/s** |
+| Peak TPS (10 streams) | **115.3 tok/s** |
+| Average TTFT (steady state) | 173 ms |
+| Peak Prompt Processing (Prefill) | **2,280 tok/s** |
+| Max context tested | 261,497 tokens (262K) |
+| Tool eval (smarts) | **97/100** |
+
+### Speed benchmark screenshot
+
+<p align="center">
+  <img src="./assets/benchmark_speed_262K_test.png" width="700" alt="SGLang DSpark speed benchmark — 262K context tests">
+</p>
+
+### Smarts benchmark screenshots
+
+<p align="center">
+  <img src="./assets/benchmark_smarts_262K_1.png" width="700" alt="SGLang smarts benchmark — page 1">
+</p>
+
+<p align="center">
+  <img src="./assets/benchmark_smarts_262K_2.png" width="700" alt="SGLang smarts benchmark — page 2">
+</p>
+
+### Notes
+
+- DSpark block diffusion showed high stability across long context (only ~23% drop between 0K and 128K context), but single-stream decode on literary prose was bounded at ~19–21 tok/s due to BF16 `lm_head` projection overhead (~1.5 GB/token) and block-diffusion verification compute.
+- Concurrency scaled to 60.5 tok/s (c=4) and 115.3 tok/s peak (c=10).
+- Tool evaluation achieved 97/100 (14/15 full passes, 1 partial on TC-14 due to default temperature variance).
+
+---
+
 ## Iteration 1 — vLLM Baseline (unsloth/Qwen3.8-27B-NVFP4)
 
 **Config:** `docker/start-vllm.sh`  
@@ -20,9 +79,6 @@ MODEL_ID=unsloth/Qwen3.8-27B-NVFP4
 HF_HOME=$HOME/.cache/huggingface uvx huggingface_hub download "$MODEL_ID"
 # Size: ~24 GB
 ```
-
-> The current default model is `RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead`.
-> Use `bash setup/download_model.sh` for the current stack.
 
 ### Configuration summary
 
@@ -50,18 +106,11 @@ HF_HOME=$HOME/.cache/huggingface uvx huggingface_hub download "$MODEL_ID"
 
 ### Speed benchmark screenshots
 
-> Benchmarked with vLLM at 512K context window. Tests 1–5 from `benchmark_speed.py`.
-> Note: Tests 2–5 used `enable_thinking=False` via `chat_template_kwargs` to avoid
-> Qwen3 `<think>` block exhausting the `max_tokens` budget — see
-> [benchmark_speed.py fix](https://github.com/airawatraj/dgx-spark-qwen38-super-agent/commit/77ce061).
-
 <p align="center">
   <img src="./assets/benchmark_speed_test_524K.png" width="700" alt="vLLM speed benchmark — Tests 1-5 at 512K context">
 </p>
 
 ### Smarts benchmark screenshots
-
-> Tool-use evaluation via `benchmark_smarts.py`. 100/100 score confirmed.
 
 <p align="center">
   <img src="./assets/benchmark_smarts_test_524K_1.png" width="700" alt="vLLM smarts benchmark — page 1">
@@ -73,12 +122,5 @@ HF_HOME=$HOME/.cache/huggingface uvx huggingface_hub download "$MODEL_ID"
 
 ### Notes
 
-- `--enforce-eager` was required to prevent CUDA graph OOM on first boot. The flash-autotune
-  cache (`/root/.cache/vllm/flashinfer_autotune_cache`) took ~2 min to warm up.
-- Speed limited by vLLM's generic cuBLAS path — no GB10-native NVFP4 GEMM kernels.
-- 14 tok/s is the true stock vLLM ceiling for this model on a single DGX Spark.
-- Migrated to SGLang DSpark (~51 tok/s) while preserving this config as `docker/start-vllm.sh`.
-
----
-
-*Add new experiment sections above this line in reverse-chronological order.*
+- `--enforce-eager` was required to prevent CUDA graph OOM on first boot.
+- Speed limited by vLLM's generic cuBLAS path — no GB10-native NVFP4 GEMM kernels (~14 tok/s).

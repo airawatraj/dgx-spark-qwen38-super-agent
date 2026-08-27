@@ -24,18 +24,19 @@ uvx --version
 echo "[3/4] Checking Hugging Face auth..."
 uvx hf auth whoami
 
-echo "[4/4] Checking SGLang image availability..."
-SGLANG_IMAGE="${SGLANG_IMAGE:-lmsysorg/sglang:qwen38-27b}"
-if docker image inspect "$SGLANG_IMAGE" >/dev/null 2>&1; then
-  echo "  SGLang image already present: $SGLANG_IMAGE"
+echo "[4/4] Checking Docker container image..."
+VLLM_IMAGE="${VLLM_IMAGE:-vllm/vllm-openai:latest}"
+if docker image inspect "$VLLM_IMAGE" >/dev/null 2>&1; then
+  echo "  vLLM image already present: $VLLM_IMAGE"
 else
-  echo "  SGLang image not found locally: $SGLANG_IMAGE"
-  echo "  It will be pulled automatically on first start (~8–12 GB)."
-  echo "  To pull now: docker pull $SGLANG_IMAGE"
+  echo "  vLLM image not found locally: $VLLM_IMAGE"
+  echo "  It will be pulled automatically on first start (~10 GB)."
+  echo "  To pull now: docker pull $VLLM_IMAGE"
 fi
 
 echo
 echo "Setup check complete."
 echo "Next: bash setup/download_model.sh"
-echo "      bash docker/start.sh   (SGLang DSpark default)"
-echo "      bash docker/start-vllm.sh  (vLLM fallback — 512K ctx)"
+echo "      bash docker/start.sh         (vLLM DFlash2 — ~38–54 tok/s default)"
+echo "      bash docker/start-sglang.sh  (SGLang DSpark — 262K)"
+echo "      bash docker/start-vllm.sh    (vLLM eager fallback — 512K ctx)"

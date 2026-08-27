@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # setup/download_model.sh
-# Downloads Qwen3.8-27B NVFP4 weights and DSpark drafter to local HF cache.
+# Downloads Qwen3.8-27B NVFP4 weights and DFlash2 drafter to local HF cache.
 # Safe to run multiple times — skips models already cached.
 # Run inside tmux if on SSH (~27 GB total).
 set -euo pipefail
 
-MODEL_ID="${MODEL_ID:-RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead}"
-DRAFTER_ID="${DRAFTER_ID:-RadixArk/Qwen3.8-27B-DSpark}"
+MODEL_ID="${MODEL_ID:-unsloth/Qwen3.8-27B-NVFP4}"
+DRAFTER_ID="${DRAFTER_ID:-z-lab/Qwen3.8-27B-DFlash2}"
 
 HF_HOME="${HF_HOME:-$HOME/.cache/huggingface}"
-MODEL_CACHE_DIR="$HF_HOME/hub/models--RadixArk--Qwen3.8-27B-NVFP4-BF16-LMHead"
-DRAFTER_CACHE_DIR="$HF_HOME/hub/models--RadixArk--Qwen3.8-27B-DSpark"
+MODEL_CACHE_DIR="$HF_HOME/hub/models--unsloth--Qwen3.8-27B-NVFP4"
+DRAFTER_CACHE_DIR="$HF_HOME/hub/models--z-lab--Qwen3.8-27B-DFlash2"
 
-echo "=== Downloading Qwen3.8-27B NVFP4 + DSpark Drafter ==="
+echo "=== Downloading Qwen3.8-27B NVFP4 + DFlash2 Drafter ==="
 echo "  Main model:  $MODEL_ID"
 echo "  Drafter:     $DRAFTER_ID"
 echo
@@ -43,7 +43,7 @@ DRAFTER_CACHED=false
 if [[ -d "$DRAFTER_CACHE_DIR/snapshots" ]]; then
   DRAFT_SNAP_COUNT=$(find "$DRAFTER_CACHE_DIR/snapshots" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
   if [[ "$DRAFT_SNAP_COUNT" -gt 0 ]]; then
-    echo "✓ DSpark drafter already present at $DRAFTER_CACHE_DIR"
+    echo "✓ DFlash2 drafter already present at $DRAFTER_CACHE_DIR"
     DRAFTER_CACHED=true
   fi
 fi
@@ -62,7 +62,7 @@ if [[ "$BASE_CACHED" != "true" ]]; then
 fi
 
 if [[ "$DRAFTER_CACHED" != "true" ]]; then
-  echo "Downloading DSpark drafter (~2.7 GB)..."
+  echo "Downloading DFlash2 drafter (~2.7 GB)..."
   uvx hf download "$DRAFTER_ID"
 fi
 
