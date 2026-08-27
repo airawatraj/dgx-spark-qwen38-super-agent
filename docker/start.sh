@@ -2,7 +2,6 @@
 # start.sh — SGLang DSpark (default high-speed stack)
 #
 # Runs Qwen3.8-27B-NVFP4 via SGLang with DSpark speculative decoding.
-# Runs Qwen3.8-27B-NVFP4 via SGLang with DSpark speculative decoding.
 #
 # Key differences vs the old vLLM start (start-vllm.sh):
 #   - Runtime:   vLLM → SGLang (lmsysorg/sglang:qwen38-27b)
@@ -100,5 +99,5 @@ echo "  docker logs -f $CONTAINER_NAME"
 echo "Ready check (SGLang takes ~3–5 min for torch.compile warmup):"
 echo "  curl -sf http://localhost:$VLLM_PORT/v1/models && echo OK"
 echo
-echo "Expected speed: ~51 tok/s (code/tools)  ~23 tok/s (chat)"
+echo "Measured speed: 19–21 tok/s single-stream (60.5 tok/s 4-session concurrent)"
 echo "Rollback to vLLM (512K ctx): bash docker/start-vllm.sh"

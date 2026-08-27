@@ -36,6 +36,6 @@ fi
 
 echo
 echo "Setup check complete."
-echo "Next: bash docker/start.sh   (SGLang DSpark — ~51 tok/s)"
-echo "      bash docker/start-vllm.sh  (vLLM fallback — 512K ctx, ~14 tok/s)"
-echo "  (Models download automatically on first run via HF_CACHE)"
+echo "Next: bash setup/download_model.sh"
+echo "      bash docker/start.sh   (SGLang DSpark default)"
+echo "      bash docker/start-vllm.sh  (vLLM fallback — 512K ctx)"

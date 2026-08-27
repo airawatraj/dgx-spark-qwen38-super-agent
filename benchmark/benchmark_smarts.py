@@ -5,7 +5,7 @@
 """
 DGX Spark / Qwen 3.8-27B Smarts Benchmark
 Runs tool-eval-bench in the common modes used for quick checks, throughput,
-and deterministic repeated evaluation against the local vLLM endpoint.
+and deterministic repeated evaluation against the local OpenAI-compatible endpoint.
 
 Usage:
   uv run benchmark/benchmark_smarts.py
@@ -85,7 +85,7 @@ def mode_description(mode):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Run tool-eval-bench against the local vLLM endpoint.",
+        description="Run tool-eval-bench against the local OpenAI-compatible endpoint.",
         epilog=(
             "Examples: uv run benchmark/benchmark_smarts.py --mode short | "
             "uv run benchmark/benchmark_smarts.py --mode perf | "

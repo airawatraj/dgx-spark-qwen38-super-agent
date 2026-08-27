@@ -12,3 +12,4 @@ benchmark/*.log
 .env.local
 .vscode/
 .idea/
+runs/
