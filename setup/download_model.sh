@@ -1,57 +1,20 @@
 #!/usr/bin/env bash
 # setup/download_model.sh
 # Downloads Qwen3.8-27B NVFP4 weights and DSpark drafter to local HF cache.
-# Idempotent — skips models already present. Set FORCE_DOWNLOAD=1 to re-download.
+# Safe to run multiple times — skips models already cached.
 # Run inside tmux if on SSH (~27 GB total).
 set -euo pipefail
 
 MODEL_ID="${MODEL_ID:-RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead}"
 DRAFTER_ID="${DRAFTER_ID:-RadixArk/Qwen3.8-27B-DSpark}"
-FORCE_DOWNLOAD="${FORCE_DOWNLOAD:-0}"
 
-repo_cache_dir() {
-  local repo_id="$1"
-  local repo_dir="models--${repo_id//\/\/--}"
-  if [[ -n "${HUGGINGFACE_HUB_CACHE:-}" ]]; then
-    printf '%s\n' "$HUGGINGFACE_HUB_CACHE/$repo_dir"
-    return
-  fi
-  if [[ -n "${HF_HOME:-}" ]]; then
-    printf '%s\n' "$HF_HOME/hub/$repo_dir"
-    return
-  fi
-  printf '%s\n' "$HOME/.cache/huggingface/hub/$repo_dir"
-}
+HF_HOME="${HF_HOME:-$HOME/.cache/huggingface}"
+MODEL_CACHE_DIR="$HF_HOME/hub/models--RadixArk--Qwen3.8-27B-NVFP4-BF16-LMHead"
+DRAFTER_CACHE_DIR="$HF_HOME/hub/models--RadixArk--Qwen3.8-27B-DSpark"
 
-repo_cache_exists() {
-  local candidate
-  candidate="$(repo_cache_dir "$1")"
-  if [[ -d "$candidate" ]] && find "$candidate" -type f -print -quit | grep -q .; then
-    echo "$candidate"
-    return 0
-  fi
-  return 1
-}
-
-download_repo() {
-  local repo_id="$1"
-  local label="$2"
-  echo
-  echo "=== Downloading $label ==="
-  echo "  Repo: $repo_id"
-  if [[ "$FORCE_DOWNLOAD" != "1" ]]; then
-    if found_dir="$(repo_cache_exists "$repo_id")"; then
-      echo "  Already cached — skipping."
-      echo "  $found_dir"
-      return
-    fi
-  fi
-  uvx hf download "$repo_id"
-}
-
-echo "=== Qwen3.8-27B NVFP4 + DSpark Drafter ==="
-echo "  Model:   $MODEL_ID"
-echo "  Drafter: $DRAFTER_ID"
+echo "=== Downloading Qwen3.8-27B NVFP4 + DSpark Drafter ==="
+echo "  Main model:  $MODEL_ID"
+echo "  Drafter:     $DRAFTER_ID"
 echo
 
 if ! command -v uvx >/dev/null 2>&1; then
@@ -62,10 +25,47 @@ fi
 
 if [[ -z "${HF_TOKEN:-}" ]]; then
   echo "WARNING: HF_TOKEN not set. May fail for gated models."
+  echo
 fi
 
-download_repo "$MODEL_ID"   "NVFP4 BF16-LMHead main model (~24 GB)"
-download_repo "$DRAFTER_ID" "DSpark drafter (~2.7 GB)"
+# ── Check Main Model Cache ────────────────────────────────────────────────────
+BASE_CACHED=false
+if [[ -d "$MODEL_CACHE_DIR/snapshots" ]]; then
+  SNAP_COUNT=$(find "$MODEL_CACHE_DIR/snapshots" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+  if [[ "$SNAP_COUNT" -gt 0 ]]; then
+    echo "✓ Main model already present at $MODEL_CACHE_DIR"
+    BASE_CACHED=true
+  fi
+fi
+
+# ── Check Drafter Cache ───────────────────────────────────────────────────────
+DRAFTER_CACHED=false
+if [[ -d "$DRAFTER_CACHE_DIR/snapshots" ]]; then
+  DRAFT_SNAP_COUNT=$(find "$DRAFTER_CACHE_DIR/snapshots" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+  if [[ "$DRAFT_SNAP_COUNT" -gt 0 ]]; then
+    echo "✓ DSpark drafter already present at $DRAFTER_CACHE_DIR"
+    DRAFTER_CACHED=true
+  fi
+fi
+
+if [[ "$BASE_CACHED" == "true" && "$DRAFTER_CACHED" == "true" ]]; then
+  echo "  All weights present. Skipping download."
+  echo
+  echo "Next: bash docker/start.sh"
+  exit 0
+fi
+
+# ── Download Missing Models ───────────────────────────────────────────────────
+if [[ "$BASE_CACHED" != "true" ]]; then
+  echo "Downloading main model (~24 GB)..."
+  uvx hf download "$MODEL_ID"
+fi
+
+if [[ "$DRAFTER_CACHED" != "true" ]]; then
+  echo "Downloading DSpark drafter (~2.7 GB)..."
+  uvx hf download "$DRAFTER_ID"
+fi
 
 echo
-echo "Download complete. Next: bash docker/start.sh"
+echo "✓ Download complete. Models cached in $HF_HOME"
+echo "Next: bash docker/start.sh"
