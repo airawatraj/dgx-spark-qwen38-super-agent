@@ -56,7 +56,10 @@ def count_tokens_approx(text):
     return int(len(text.split()) * 1.33)
 
 
-def stream_completion(host, port, model, prompt, max_tokens=200, timeout=120, debug=False):
+def stream_completion(
+    host, port, model, prompt, max_tokens=200, timeout=120, debug=False,
+    enable_thinking=True, thinking_budget=None
+):
     url = f"http://{host}:{port}/v1/chat/completions"
     payload = {
         "model": model,
@@ -66,6 +69,12 @@ def stream_completion(host, port, model, prompt, max_tokens=200, timeout=120, de
         "stream": True,
         "stream_options": {"include_usage": True},
     }
+    # Qwen3 thinking mode: disable or cap the <think> budget so it does not
+    # consume the entire max_tokens allowance in throughput-focused tests.
+    if not enable_thinking:
+        payload["chat_template_kwargs"] = {"enable_thinking": False}
+    elif thinking_budget is not None:
+        payload["chat_template_kwargs"] = {"thinking_budget": thinking_budget}
 
     t_start = time.perf_counter()
     t_first = None
@@ -167,20 +176,30 @@ def test_baseline_tps(host, port, model, debug=False):
 
 def test_tps_vs_length(host, port, model):
     header("TEST 2 — TPS vs Output Length")
+    # Thinking mode is disabled here: we want to measure raw generation throughput
+    # at specific output lengths, not the thinking budget. With reasoning enabled,
+    # small max_tokens limits are consumed entirely by <think> blocks.
     lengths = [50, 150, 300, 600, 1000]
     prompt = "Write a detailed explanation of how transformers work in machine learning."
 
-    print(f"  {'Output tokens'.ljust(18)} {'TPS'.ljust(12)} {'TTFT'}")
-    print(f"  {'─' * 44}")
+    print(f"  {'Target tokens'.ljust(18)} {'Actual tok'.ljust(12)} {'TPS'.ljust(12)} {'TTFT'}")
+    print(f"  {'─' * 56}")
 
     for max_tok in lengths:
-        ttft, tps, tokens, _, err = stream_completion(host, port, model, prompt, max_tokens=max_tok)
+        ttft, tps, tokens, _, err = stream_completion(
+            host, port, model, prompt,
+            max_tokens=max_tok,
+            enable_thinking=False,
+        )
         if err:
             print(f"  {str(max_tok).ljust(18)} {c('FAILED: ' + err, 'red')}")
         else:
             tps_color = "green" if tps >= 80 else "yellow" if tps >= 40 else "red"
             token_label = f"{tokens} tok"
-            print(f"  {token_label.ljust(18)} {c(str(tps)+' tok/s', tps_color).ljust(20)} {ttft}ms")
+            print(
+                f"  {str(max_tok)+' tok':18} {token_label.ljust(12)} "
+                f"{c(str(tps)+' tok/s', tps_color).ljust(20)} {ttft}ms"
+            )
         time.sleep(1)
 
 
@@ -199,7 +218,8 @@ def test_concurrent(host, port, model, max_concurrent=4):
 
         def run_request(idx):
             ttft, tps, tokens, _, err = stream_completion(
-                host, port, model, prompts_list[idx % len(prompts_list)], max_tokens=200
+                host, port, model, prompts_list[idx % len(prompts_list)],
+                max_tokens=200, enable_thinking=False,
             )
             if err:
                 errors.append(err)
@@ -246,7 +266,9 @@ def test_context_window(host, port, model):
         prompt = make_prompt(int(size * 0.75))
         actual_tokens = count_tokens_approx(prompt)
 
-        ttft, tps, _, _, err = stream_completion(host, port, model, prompt, max_tokens=100, timeout=300)
+        ttft, tps, _, _, err = stream_completion(
+            host, port, model, prompt, max_tokens=100, timeout=300, enable_thinking=False
+        )
         if err:
             if "context" in err.lower() or "length" in err.lower() or "exceed" in err.lower():
                 status = c("Context exceeded", "red")
