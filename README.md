@@ -62,19 +62,22 @@ flowchart TD
 
 ## Quick Start
 
-> ⚠️ **Note:** On first start, SGLang downloads the main model (~24 GB) and the DSpark drafter (~2.7 GB) into the HF cache. Subsequent starts skip the download. Ensure HF auth is set up and allow ~5 min for `torch.compile` warmup on first boot.
+> ⚠️ **Note:** Run `download_model.sh` once before first launch (~27 GB total). Ensure HF auth is set up. Allow ~5 min for `torch.compile` warmup on first boot. Run in `tmux` if on SSH.
 
 ```bash
 # 1. Verify prerequisites (Docker, uv/uvx, HF auth, SGLang image)
 bash setup/install.sh
 
-# 2. Launch spark-brain (SGLang DSpark — ~51 tok/s)
+# 2. Download models — one-time, ~27 GB (run in tmux on SSH)
+bash setup/download_model.sh
+
+# 3. Launch spark-brain (SGLang DSpark — ~51 tok/s)
 bash docker/start.sh
 
-# 3. Follow logs (wait for "Uvicorn running on http://0.0.0.0:8000")
+# 4. Follow logs (wait for "Uvicorn running on http://0.0.0.0:8000")
 docker logs -f spark-brain
 
-# 4. Ready check
+# 5. Ready check
 curl -sf http://localhost:8000/v1/models && echo OK
 ```
 
@@ -121,21 +124,12 @@ uv run benchmark/benchmark_speed_arena.py --save-result benchmark/results_arena.
 
 ### Speed Results (SGLang DSpark)
 
-> Re-run `uv run benchmark/benchmark_speed.py` after migrating and add screenshot here.
-> Historical vLLM baseline results (512K context, ~14 tok/s) are in [EXPERIMENTS.md](EXPERIMENTS.md).
+> Run `uv run benchmark/benchmark_speed.py` after first boot and add screenshot here.
 
-### Smarts Results (Tool-Use Evaluation — 100/100)
+### Smarts Results (Tool-Use Evaluation)
 
-> Smarts score is runtime-independent (same model weights). Historical screenshots
-> from the vLLM run are in [EXPERIMENTS.md](EXPERIMENTS.md).
-
-<p align="center">
-  <img src="./assets/benchmark_smarts_test_524K_1.png" width="700" alt="Smarts benchmark — page 1">
-</p>
-
-<p align="center">
-  <img src="./assets/benchmark_smarts_test_524K_2.png" width="700" alt="Smarts benchmark — page 2">
-</p>
+> Run `uv run benchmark/benchmark_smarts.py` after first boot and add screenshot here.
+> Prior vLLM smarts results (100/100) are in [EXPERIMENTS.md](EXPERIMENTS.md).
 
 ## Environment Overrides
 
@@ -161,7 +155,8 @@ dgx-spark-qwen38-super-agent/
 ├── CITATION.cff             ← citation metadata
 ├── LICENSE                  ← MIT license
 ├── setup/
-│   └── install.sh           ← verify Docker, uv/uvx, and Hugging Face auth
+│   ├── install.sh           ← verify Docker, uv/uvx, and Hugging Face auth
+│   └── download_model.sh    ← download RadixArk NVFP4 + DSpark drafter (~27 GB)
 ├── docker/
 │   ├── start.sh             ← SGLang DSpark launch (~51 tok/s, default)
 │   ├── start-vllm.sh        ← vLLM fallback (512K ctx, multimodal, ~14 tok/s)

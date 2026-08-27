@@ -12,6 +12,18 @@ the default. The current default stack is documented in [README.md](README.md).
 **Runtime:** vLLM `vllm/vllm-openai:latest`  
 **Date:** August 2026
 
+### Model download (archived)
+
+```bash
+# Model used in this experiment — different from current default
+MODEL_ID=unsloth/Qwen3.8-27B-NVFP4
+HF_HOME=$HOME/.cache/huggingface uvx huggingface_hub download "$MODEL_ID"
+# Size: ~24 GB
+```
+
+> The current default model is `RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead`.
+> Use `bash setup/download_model.sh` for the current stack.
+
 ### Configuration summary
 
 | Parameter | Value |
