@@ -4,7 +4,7 @@
 # dependencies = ["requests"]
 # ///
 """
-DGX Spark / Qwen 3.8-27B vLLM benchmark
+DGX Spark / Qwen 3.8-27B SGLang DSpark benchmark
 Tests TPS, TTFT, concurrency, and maximum usable context window.
 Usage: uv run benchmark/benchmark_speed.py [--host localhost] [--port 8000] [--model Cogni-Brain]
 """
@@ -194,7 +194,7 @@ def test_tps_vs_length(host, port, model):
         if err:
             print(f"  {str(max_tok).ljust(18)} {c('FAILED: ' + err, 'red')}")
         else:
-            tps_color = "green" if tps >= 80 else "yellow" if tps >= 40 else "red"
+            tps_color = "green" if tps >= 50 else "yellow" if tps >= 30 else "red"
             token_label = f"{tokens} tok"
             print(
                 f"  {str(max_tok)+' tok':18} {token_label.ljust(12)} "
@@ -258,8 +258,8 @@ def test_context_window(host, port, model):
     print(f"  {'Context tokens'.ljust(20)} {'Result'.ljust(20)} {'TPS'}")
     print(f"  {'─' * 50}")
 
-    # Qwen 3.8-27B has a 512K context via vLLM
-    sizes = [1024, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288]
+    # Qwen3.8-27B on SGLang DSpark supports up to 262K context
+    sizes = [1024, 4096, 8192, 16384, 32768, 65536, 131072, 262144]
     last_working = 0
 
     for size in sizes:
@@ -290,7 +290,7 @@ def test_context_window(host, port, model):
 
 
 def test_health(host, port):
-    header("TEST 5 — vLLM Health")
+    header("TEST 5 — Server Health")
     try:
         response = requests.get(f"http://{host}:{port}/health", timeout=5)
         result_line(
@@ -322,19 +322,19 @@ def print_summary(avg_tps, peak_tps, max_context, host, port, model):
         "Average TPS (single session)",
         avg_tps,
         "tok/s",
-        "green" if avg_tps >= 80 else "yellow" if avg_tps >= 40 else "red",
+        "green" if avg_tps >= 50 else "yellow" if avg_tps >= 30 else "red",
     )
     result_line(
         "Peak TPS (single session)",
         peak_tps,
         "tok/s",
-        "green" if peak_tps >= 100 else "yellow" if avg_tps >= 60 else "red",
+        "green" if peak_tps >= 50 else "yellow" if peak_tps >= 30 else "red",
     )
     result_line("Max usable context", f"~{max_context:,}" if max_context else "not tested", "tokens")
     print()
-    if avg_tps >= 80:
-        print(f"  {c('Excellent — vLLM config is working well', 'green')}")
-    elif avg_tps >= 40:
+    if avg_tps >= 50:
+        print(f"  {c('Excellent — SGLang DSpark config is working well', 'green')}")
+    elif avg_tps >= 30:
         print(f"  {c('Good — decent throughput, but there is room to tune', 'yellow')}")
     else:
         print(f"  {c('Below expectation — check logs and memory settings', 'red')}")
@@ -354,16 +354,16 @@ def main():
     parser.add_argument("--skip-concurrent", action="store_true", help="Skip concurrent session test")
     args = parser.parse_args()
 
-    print(f"\n{c('DGX Spark Qwen 3.8-27B vLLM Benchmark', 'bold')}")
+    print(f"\n{c('DGX Spark Qwen3.8-27B SGLang DSpark Benchmark', 'bold')}")
     print(f"{c('Target: ', 'dim')}http://{args.host}:{args.port}  model={args.model}")
 
     try:
-        response = requests.get(f"http://{args.host}:{args.port}/health", timeout=5)
+        response = requests.get(f"http://{args.host}:{args.port}/health", timeout=30)
         if response.status_code != 200:
-            print(c(f"\nCannot reach healthy vLLM endpoint (HTTP {response.status_code})", "red"))
+            print(c(f"\nCannot reach healthy SGLang endpoint (HTTP {response.status_code})", "red"))
             sys.exit(1)
     except Exception as exc:
-        print(c(f"\nCannot reach vLLM: {exc}", "red"))
+        print(c(f"\nCannot reach SGLang: {exc}", "red"))
         print(c("  Make sure spark-brain is running and the port is correct.", "dim"))
         sys.exit(1)
 
