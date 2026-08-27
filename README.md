@@ -74,33 +74,6 @@ docker logs -f spark-brain
 # Wait for "Application startup complete" and "Uvicorn running on http://0.0.0.0:8000"
 ```
 
-## Raw Docker Command
-
-The exact command used to launch, with no wrappers:
-
-```bash
-docker rm -f spark-brain 2>/dev/null && docker run -d \
-  --name spark-brain \
-  --gpus all \
-  --ipc=host \
-  -e VLLM_ALLOW_LONG_MAX_MODEL_LEN=1 \
-  -p 8000:8000 \
-  -v ~/.cache/huggingface:/root/.cache/huggingface \
-  vllm/vllm-openai:latest \
-  unsloth/Qwen3.8-27B-NVFP4 \
-  --served-model-name "Cogni-Brain" \
-  --max-model-len 524288 \
-  --kv-cache-dtype fp8 \
-  --enable-chunked-prefill \
-  --max-num-batched-tokens 16384 \
-  --gpu-memory-utilization 0.85 \
-  --enforce-eager \
-  --enable-auto-tool-choice \
-  --tool-call-parser qwen3_coder \
-  --reasoning-parser qwen3 \
-  --limit-mm-per-prompt '{"image": 4, "video": 1}'
-```
-
 ### Key flags explained
 
 | Flag | Value | Reason |
@@ -129,6 +102,22 @@ uv run benchmark/benchmark_smarts.py
 # Full spark-arena-style throughput sweep
 uv run benchmark/benchmark_speed_arena.py --save-result benchmark/results_arena.csv
 ```
+
+### Speed Results (512K context)
+
+<p align="center">
+  <img src="./assets/benchmark_speed_test_524K.png" width="700" alt="Speed benchmark — Tests 1-5">
+</p>
+
+### Smarts Results (Tool-Use Evaluation)
+
+<p align="center">
+  <img src="./assets/benchmark_smarts_test_524K_1.png" width="700" alt="Smarts benchmark — page 1">
+</p>
+
+<p align="center">
+  <img src="./assets/benchmark_smarts_test_524K_2.png" width="700" alt="Smarts benchmark — page 2">
+</p>
 
 ## Environment Overrides
 
