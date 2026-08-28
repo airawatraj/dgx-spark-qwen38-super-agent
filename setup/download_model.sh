@@ -48,13 +48,6 @@ if [[ -d "$DRAFTER_CACHE_DIR/snapshots" ]]; then
   fi
 fi
 
-if [[ "$BASE_CACHED" == "true" && "$DRAFTER_CACHED" == "true" ]]; then
-  echo "  All weights present. Skipping download."
-  echo
-  echo "Next: bash docker/start.sh"
-  exit 0
-fi
-
 # ── Download Missing Models ───────────────────────────────────────────────────
 if [[ "$BASE_CACHED" != "true" ]]; then
   echo "Downloading main model (~24 GB)..."
@@ -66,6 +59,15 @@ if [[ "$DRAFTER_CACHED" != "true" ]]; then
   uvx hf download "$DRAFTER_ID"
 fi
 
+# ── Ensure Drafter Architecture Compatibility with vLLM ────────────────────────
+# vLLM model registry registers DFlash under 'DFlashDraftModel'
+find "$DRAFTER_CACHE_DIR" -name "config.json" -type f | while read -r cfg; do
+  if grep -q "DFlash2DraftModel" "$cfg"; then
+    echo "Patching $cfg: DFlash2DraftModel -> DFlashDraftModel for vLLM compatibility..."
+    sed -i.bak 's/DFlash2DraftModel/DFlashDraftModel/g' "$cfg"
+  fi
+done
+
 echo
-echo "✓ Download complete. Models cached in $HF_HOME"
+echo "✓ Models verified and ready in $HF_HOME"
 echo "Next: bash docker/start.sh"
