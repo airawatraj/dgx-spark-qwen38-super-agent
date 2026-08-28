@@ -61,12 +61,22 @@ fi
 
 # ── Ensure Drafter Architecture Compatibility with vLLM ────────────────────────
 # vLLM model registry registers DFlash under 'DFlashDraftModel'
-find "$DRAFTER_CACHE_DIR" -name "config.json" -type f | while read -r cfg; do
-  if grep -q "DFlash2DraftModel" "$cfg"; then
-    echo "Patching $cfg: DFlash2DraftModel -> DFlashDraftModel for vLLM compatibility..."
-    sed -i.bak 's/DFlash2DraftModel/DFlashDraftModel/g' "$cfg"
-  fi
-done
+python3 -c '
+import glob, json, os, sys
+hf_dir = os.path.expanduser(sys.argv[1]) if len(sys.argv) > 1 else os.path.expanduser("~/.cache/huggingface")
+for cfg in glob.glob(f"{hf_dir}/**/*Qwen3.8-27B-DFlash2*/**/config.json", recursive=True):
+    real_path = os.path.realpath(cfg)
+    try:
+        with open(real_path, "r") as f:
+            data = json.load(f)
+        if "architectures" in data and "DFlash2DraftModel" in data["architectures"]:
+            data["architectures"] = ["DFlashDraftModel" if a == "DFlash2DraftModel" else a for a in data["architectures"]]
+            with open(real_path, "w") as f:
+                json.dump(data, f, indent=2)
+            print(f"✓ Patched {real_path} for vLLM compatibility (DFlash2DraftModel -> DFlashDraftModel)")
+    except Exception as e:
+        pass
+' "$HF_HOME" 2>/dev/null || true
 
 echo
 echo "✓ Models verified and ready in $HF_HOME"
