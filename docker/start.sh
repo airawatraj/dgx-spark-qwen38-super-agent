@@ -21,6 +21,15 @@ MAX_NUM_BATCHED_TOKENS="${MAX_NUM_BATCHED_TOKENS:-16384}"
 GPU_MEMORY_UTILIZATION="${GPU_MEMORY_UTILIZATION:-0.60}"
 NUM_SPECULATIVE_TOKENS="${NUM_SPECULATIVE_TOKENS:-8}"
 
+# ── Ensure Drafter Architecture Compatibility with vLLM ────────────────────────
+# vLLM registers DFlash under 'DFlashDraftModel'
+find "$HF_CACHE_DIR/hub" -path "*Qwen3.8-27B-DFlash2*/config.json" -type f 2>/dev/null | while read -r cfg; do
+  if grep -q "DFlash2DraftModel" "$cfg"; then
+    echo "Patching $cfg: DFlash2DraftModel -> DFlashDraftModel for vLLM..."
+    sed -i.bak 's/DFlash2DraftModel/DFlashDraftModel/g' "$cfg"
+  fi
+done
+
 # ── Preflight ─────────────────────────────────────────────────────────────────
 echo "=== Qwen3.8-27B vLLM DFlash2 preflight ==="
 echo "  Model:                  $MODEL_ID (4-bit lm_head)"
