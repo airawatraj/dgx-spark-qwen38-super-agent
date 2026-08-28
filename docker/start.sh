@@ -50,25 +50,25 @@ docker run -d \
   -p "${VLLM_PORT}:8000" \
   -v "${HF_CACHE_DIR}:/root/.cache/huggingface" \
   "$VLLM_IMAGE" \
-  vllm serve "$MODEL_ID" \
-    --host 0.0.0.0 \
-    --port 8000 \
-    --served-model-name "$SERVED_MODEL_NAME" \
-    --tensor-parallel-size 1 \
-    --trust-remote-code \
-    --gpu-memory-utilization "$GPU_MEMORY_UTILIZATION" \
-    --max-model-len "$MAX_MODEL_LEN" \
-    --max-num-seqs "$MAX_NUM_SEQS" \
-    --max-num-batched-tokens "$MAX_NUM_BATCHED_TOKENS" \
-    --enable-chunked-prefill \
-    --skip-mm-profiling \
-    --limit-mm-per-prompt '{"image":0,"video":0}' \
-    --reasoning-parser qwen3 \
-    --tool-call-parser qwen3_coder \
-    --enable-auto-tool-choice \
-    --generation-config auto \
-    --speculative-config "{\"method\":\"dflash\",\"model\":\"$DFLASH_DRAFT\",\"num_speculative_tokens\":$NUM_SPECULATIVE_TOKENS}" \
-    --default-chat-template-kwargs '{"enable_thinking":true,"reasoning_effort":"medium"}'
+  --model "$MODEL_ID" \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --served-model-name "$SERVED_MODEL_NAME" \
+  --tensor-parallel-size 1 \
+  --trust-remote-code \
+  --gpu-memory-utilization "$GPU_MEMORY_UTILIZATION" \
+  --max-model-len "$MAX_MODEL_LEN" \
+  --max-num-seqs "$MAX_NUM_SEQS" \
+  --max-num-batched-tokens "$MAX_NUM_BATCHED_TOKENS" \
+  --enable-chunked-prefill \
+  --skip-mm-profiling \
+  --limit-mm-per-prompt '{"image":0,"video":0}' \
+  --reasoning-parser qwen3 \
+  --tool-call-parser qwen3_coder \
+  --enable-auto-tool-choice \
+  --generation-config auto \
+  --speculative-config "{\"method\":\"dflash\",\"model\":\"$DFLASH_DRAFT\",\"num_speculative_tokens\":$NUM_SPECULATIVE_TOKENS}" \
+  --default-chat-template-kwargs '{"enable_thinking":true,"reasoning_effort":"medium"}'
 
 echo
 echo "Container started. Follow logs with:"
