@@ -4,7 +4,7 @@
 # dependencies = ["requests"]
 # ///
 """
-DGX Spark / Qwen 3.8-27B SGLang DSpark benchmark
+DGX Spark / Qwen 3.8-27B Speed & Context Benchmark
 Tests TPS, TTFT, concurrency, and maximum usable context window.
 Usage: uv run benchmark/benchmark_speed.py [--host localhost] [--port 8000] [--model Cogni-Brain]
 """

@@ -37,6 +37,6 @@ fi
 echo
 echo "Setup check complete."
 echo "Next: bash setup/download_model.sh"
-echo "      bash docker/start.sh         (vLLM DFlash2 — ~38–54 tok/s default)"
+echo "      bash docker/start.sh         (vLLM MTP — 100/100 smarts default)"
 echo "      bash docker/start-sglang.sh  (SGLang DSpark — 262K)"
 echo "      bash docker/start-vllm.sh    (vLLM eager fallback — 512K ctx)"
