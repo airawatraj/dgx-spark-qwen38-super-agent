@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-# start.sh — vLLM DFlash2 (high-speed production stack)
+# start.sh — vLLM with native MTP speculative decoding
 #
-# Runs unsloth/Qwen3.8-27B-NVFP4 (4-bit lm_head) with z-lab/Qwen3.8-27B-DFlash2
-# speculative decoding (k=8) on a single NVIDIA DGX Spark node.
-# Expected speed: ~38–54+ tok/s single stream | 100/100 Tool-Eval intelligence
+# Runs unsloth/Qwen3.8-27B-NVFP4 (4-bit lm_head) with built-in Multi-Token Prediction (MTP)
+# speculative decoding on a single NVIDIA DGX Spark node.
 set -euo pipefail
 
 # ── Configuration (override via env vars before calling this script) ──────────
@@ -11,7 +10,6 @@ CONTAINER_NAME="${CONTAINER_NAME:-spark-brain}"
 VLLM_IMAGE="${VLLM_IMAGE:-vllm/vllm-openai:latest}"
 VLLM_PORT="${VLLM_PORT:-8000}"
 MODEL_ID="${MODEL_ID:-unsloth/Qwen3.8-27B-NVFP4}"
-DFLASH_DRAFT="${DFLASH_DRAFT:-z-lab/Qwen3.8-27B-DFlash2}"
 SERVED_MODEL_NAME="${SERVED_MODEL_NAME:-Cogni-Brain}"
 HF_CACHE_DIR="${HF_CACHE_DIR:-$HOME/.cache/huggingface}"
 
@@ -19,31 +17,12 @@ MAX_MODEL_LEN="${MAX_MODEL_LEN:-262144}"
 MAX_NUM_SEQS="${MAX_NUM_SEQS:-4}"
 MAX_NUM_BATCHED_TOKENS="${MAX_NUM_BATCHED_TOKENS:-16384}"
 GPU_MEMORY_UTILIZATION="${GPU_MEMORY_UTILIZATION:-0.60}"
-NUM_SPECULATIVE_TOKENS="${NUM_SPECULATIVE_TOKENS:-8}"
-
-# ── Ensure Drafter Architecture Compatibility with vLLM ────────────────────────
-# vLLM model registry registers DFlash under 'DFlashDraftModel'
-python3 -c '
-import glob, json, os, sys
-hf_dir = os.path.expanduser(sys.argv[1]) if len(sys.argv) > 1 else os.path.expanduser("~/.cache/huggingface")
-for cfg in glob.glob(f"{hf_dir}/**/*Qwen3.8-27B-DFlash2*/**/config.json", recursive=True):
-    real_path = os.path.realpath(cfg)
-    try:
-        with open(real_path, "r") as f:
-            data = json.load(f)
-        if "architectures" in data and "DFlash2DraftModel" in data["architectures"]:
-            data["architectures"] = ["DFlashDraftModel" if a == "DFlash2DraftModel" else a for a in data["architectures"]]
-            with open(real_path, "w") as f:
-                json.dump(data, f, indent=2)
-            print(f"✓ Patched {real_path} for vLLM compatibility (DFlash2DraftModel -> DFlashDraftModel)")
-    except Exception as e:
-        pass
-' "$HF_CACHE_DIR" 2>/dev/null || true
+NUM_MTP_TOKENS="${NUM_MTP_TOKENS:-2}"
 
 # ── Preflight ─────────────────────────────────────────────────────────────────
-echo "=== Qwen3.8-27B vLLM DFlash2 preflight ==="
+echo "=== Qwen3.8-27B vLLM MTP preflight ==="
 echo "  Model:                  $MODEL_ID (4-bit lm_head)"
-echo "  Drafter:                $DFLASH_DRAFT (k=$NUM_SPECULATIVE_TOKENS)"
+echo "  Speculative:            MTP (tokens=$NUM_MTP_TOKENS)"
 echo "  Served model name:      $SERVED_MODEL_NAME"
 echo "  Container:              $CONTAINER_NAME"
 echo "  Image:                  $VLLM_IMAGE"
@@ -57,7 +36,7 @@ echo
 echo "Removing any existing container named $CONTAINER_NAME ..."
 docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
 
-echo "Starting spark-brain (vLLM DFlash2) ..."
+echo "Starting spark-brain (vLLM MTP) ..."
 docker run -d \
   --name "$CONTAINER_NAME" \
   --gpus all \
@@ -86,7 +65,7 @@ docker run -d \
   --tool-call-parser qwen3_coder \
   --enable-auto-tool-choice \
   --generation-config auto \
-  --speculative-config "{\"method\":\"dflash\",\"model\":\"$DFLASH_DRAFT\",\"num_speculative_tokens\":$NUM_SPECULATIVE_TOKENS}" \
+  --speculative-config "{\"method\":\"mtp\",\"num_speculative_tokens\":$NUM_MTP_TOKENS}" \
   --default-chat-template-kwargs '{"enable_thinking":true,"reasoning_effort":"medium"}'
 
 echo
@@ -95,6 +74,6 @@ echo "  docker logs -f $CONTAINER_NAME"
 echo "Ready check:"
 echo "  curl -sf http://localhost:$VLLM_PORT/health && echo OK"
 echo
-echo "Expected speed: ~38–54 tok/s | 100/100 Tool-Eval"
+echo "Expected speed: ~35–45+ tok/s | 100/100 Tool-Eval"
 echo "SGLang DSpark:  bash docker/start-sglang.sh"
 echo "vLLM 512K mode: bash docker/start-vllm.sh"
