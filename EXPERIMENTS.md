@@ -11,7 +11,8 @@ the default. The current default stack is documented in [README.md](README.md).
 **Model:** `RadixArk/Qwen3.8-27B-NVFP4-BF16-LMHead`  
 **Drafter:** `RadixArk/Qwen3.8-27B-DSpark` (block-7, k=8)  
 **Runtime:** SGLang `lmsysorg/sglang:qwen38-27b`  
-**Date:** August 2026
+**Date:** August 2026  
+**Spark Arena:** [spark-arena.com/benchmark/e9d22fd7-dd13-4e4d-b24a-9976cc868a36](https://spark-arena.com/benchmark/e9d22fd7-dd13-4e4d-b24a-9976cc868a36)
 
 ### Configuration summary
 
@@ -39,6 +40,7 @@ the default. The current default stack is documented in [README.md](README.md).
 | Peak Prompt Processing (Prefill) | **2,280 tok/s** |
 | Max context tested | 261,497 tokens (262K) |
 | Tool eval (smarts) | **97/100** |
+| Spark Arena Run | [e9d22fd7-dd13-4e4d-b24a-9976cc868a36](https://spark-arena.com/benchmark/e9d22fd7-dd13-4e4d-b24a-9976cc868a36) |
 
 ### Speed benchmark screenshot
 
@@ -54,6 +56,14 @@ the default. The current default stack is documented in [README.md](README.md).
 
 <p align="center">
   <img src="./assets/benchmark_smarts_262K_2.png" width="700" alt="SGLang smarts benchmark — page 2">
+</p>
+
+### Spark Arena benchmark screenshot
+
+<p align="center">
+  <a href="https://spark-arena.com/benchmark/e9d22fd7-dd13-4e4d-b24a-9976cc868a36">
+    <img src="./assets/benchmark_spark_arena_1.png" width="700" alt="SGLang DSpark Spark Arena benchmark results">
+  </a>
 </p>
 
 ### Notes
