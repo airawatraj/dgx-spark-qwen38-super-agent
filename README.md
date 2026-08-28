@@ -19,7 +19,7 @@ Part of the DGX Spark local agent series:
 - [Cogni-Brain-2 (Qwen 3.6-35B via Atlas)](https://github.com/airawatraj/dgx-spark-qwen-super-agent) — fast & agentic, 218 TPS
 - More setups: [github.com/airawatraj](https://github.com/airawatraj)
 
-This iteration runs **[unsloth/Qwen3.8-27B-NVFP4](https://huggingface.co/unsloth/Qwen3.8-27B-NVFP4)** (with 4-bit `lm_head`) via **vLLM** with **[z-lab/Qwen3.8-27B-DFlash2](https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2)** speculative decoding ($k=8$). Delivering **~38–54 tok/s single-stream**, **100/100 Tool-Eval intelligence**, native tool-calling via `qwen3_coder`, and a **262K token context window** on a single DGX Spark node.
+This iteration runs **[unsloth/Qwen3.8-27B-NVFP4](https://huggingface.co/unsloth/Qwen3.8-27B-NVFP4)** (with 4-bit `lm_head` and calibrated FP8 KV cache scaling) via **vLLM** with **[z-lab/Qwen3.8-27B-DFlash2](https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2)** speculative decoding ($k=8$). Delivering **~38–54 tok/s single-stream**, **100/100 Tool-Eval intelligence**, native tool-calling via `qwen3_coder`, and a **262K token context window** on a single DGX Spark node.
 
 > ⚠️ **Personal workstation setup. Not for enterprise use. Use at your own risk.**
 
