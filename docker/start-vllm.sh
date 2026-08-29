@@ -3,11 +3,11 @@
 #
 # This is the original vLLM launch preserved as a rollback path.
 # Use when you need:
-#   - 512K context window (DSpark caps at 262K)
+#   - 512K context window (MTP/DSpark default is 262K)
 #   - Multimodal inputs (image × 4, video × 1)
-#   - vLLM-specific debugging
+#   - vLLM eager debugging without speculative decoding
 #
-# For the default high-speed SGLang DSpark stack, use docker/start.sh
+# For the default vLLM MTP stack (24-26 tok/s steady, 100/100 smarts), use docker/start.sh
 set -euo pipefail
 
 CONTAINER_NAME="${CONTAINER_NAME:-spark-brain}"
@@ -63,4 +63,4 @@ echo "  docker logs -f $CONTAINER_NAME"
 echo "Ready check:"
 echo "  curl -sf http://localhost:$VLLM_PORT/health && echo OK"
 echo
-echo "Speed note: vLLM delivers ~14 tok/s. For ~51 tok/s, use: bash docker/start.sh"
+echo "Speed note: Eager vLLM delivers ~14 tok/s. For 24–26 tok/s (119 burst) MTP, use: bash docker/start.sh"

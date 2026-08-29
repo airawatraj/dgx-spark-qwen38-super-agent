@@ -74,6 +74,6 @@ echo "  docker logs -f $CONTAINER_NAME"
 echo "Ready check:"
 echo "  curl -sf http://localhost:$VLLM_PORT/health && echo OK"
 echo
-echo "Expected speed: ~35–45+ tok/s | 100/100 Tool-Eval"
+echo "Expected speed: ~24–26 tok/s (119 tok/s burst) | 100/100 Tool-Eval"
 echo "SGLang DSpark:  bash docker/start-sglang.sh"
 echo "vLLM 512K mode: bash docker/start-vllm.sh"

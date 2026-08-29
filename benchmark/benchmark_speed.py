@@ -258,7 +258,7 @@ def test_context_window(host, port, model):
     print(f"  {'Context tokens'.ljust(20)} {'Result'.ljust(20)} {'TPS'}")
     print(f"  {'─' * 50}")
 
-    # Qwen3.8-27B on SGLang DSpark supports up to 262K context
+    # Qwen3.8-27B supports up to 262K context
     sizes = [1024, 4096, 8192, 16384, 32768, 65536, 131072, 262144]
     last_working = 0
 
@@ -333,9 +333,11 @@ def print_summary(avg_tps, peak_tps, max_context, host, port, model):
     result_line("Max usable context", f"~{max_context:,}" if max_context else "not tested", "tokens")
     print()
     if avg_tps >= 50:
-        print(f"  {c('Excellent — SGLang DSpark config is working well', 'green')}")
-    elif avg_tps >= 30:
-        print(f"  {c('Good — decent throughput, but there is room to tune', 'yellow')}")
+        print(f"  {c('Excellent — endpoint throughput is performing well', 'green')}")
+    elif avg_tps >= 24:
+        print(f"  {c('Good — steady state generation is solid', 'green')}")
+    elif avg_tps >= 15:
+        print(f"  {c('Moderate — decent throughput, but there is room to tune', 'yellow')}")
     else:
         print(f"  {c('Below expectation — check logs and memory settings', 'red')}")
     print()
@@ -354,16 +356,16 @@ def main():
     parser.add_argument("--skip-concurrent", action="store_true", help="Skip concurrent session test")
     args = parser.parse_args()
 
-    print(f"\n{c('DGX Spark Qwen3.8-27B SGLang DSpark Benchmark', 'bold')}")
+    print(f"\n{c('DGX Spark Qwen3.8-27B Speed Benchmark', 'bold')}")
     print(f"{c('Target: ', 'dim')}http://{args.host}:{args.port}  model={args.model}")
 
     try:
         response = requests.get(f"http://{args.host}:{args.port}/health", timeout=30)
         if response.status_code != 200:
-            print(c(f"\nCannot reach healthy SGLang endpoint (HTTP {response.status_code})", "red"))
+            print(c(f"\nCannot reach healthy endpoint (HTTP {response.status_code})", "red"))
             sys.exit(1)
     except Exception as exc:
-        print(c(f"\nCannot reach SGLang: {exc}", "red"))
+        print(c(f"\nCannot reach endpoint: {exc}", "red"))
         print(c("  Make sure spark-brain is running and the port is correct.", "dim"))
         sys.exit(1)
 
