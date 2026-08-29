@@ -126,6 +126,16 @@ uv run benchmark/benchmark_speed_arena.py --save-result benchmark/results_arena.
   <img src="./assets/benchmark_smarts_qwen38_nvfp4_2.png" width="700" alt="Smarts benchmark 100/100 — breakdown and points">
 </p>
 
+### Spark Arena Benchmark (Verified Submission)
+
+**Run Link:** [spark-arena.com/benchmark/ebdc96af-3b58-4c5d-88f2-af996e166687](https://spark-arena.com/benchmark/ebdc96af-3b58-4c5d-88f2-af996e166687)
+
+<p align="center">
+  <a href="https://spark-arena.com/benchmark/ebdc96af-3b58-4c5d-88f2-af996e166687">
+    <img src="./assets/benchmark_spark_arena_2.png" width="700" alt="vLLM MTP Spark Arena benchmark results">
+  </a>
+</p>
+
 ---
 
 ## Repository Structure
@@ -158,6 +168,6 @@ dgx-spark-qwen38-super-agent/
 | **[Cogni-Brain-2 (airawatraj)](https://spark-arena.com/benchmark/sub1779495971526)** | Qwen 3.6-35B | Atlas NVFP4 | **218.85 tok/s** | — | 131K | **100/100** |
 | **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716)** | Nemotron-120B | vLLM NVFP4 | **23.45 tok/s** | — | 131K | **100/100** |
 | **[Cogni-Brain (SGLang)](https://spark-arena.com/benchmark/sub1787869873047)** | Qwen3.8-27B | SGLang DSpark | 19.6 tok/s | **115.3 tok/s** | 262K | 97/100 |
-| **Cogni-Brain (this repo)** | Qwen3.8-27B | **vLLM MTP** | **24–26 tok/s** | **60.6 tok/s** | 262K | **100/100** |
+| **[Cogni-Brain (this repo)](https://spark-arena.com/benchmark/ebdc96af-3b58-4c5d-88f2-af996e166687)** | Qwen3.8-27B | **vLLM MTP** | **24–26 tok/s** | **60.6 tok/s** | 262K | **100/100** |
 
 > All historical baseline logs and arena sweep charts are archived in [EXPERIMENTS.md](EXPERIMENTS.md).
